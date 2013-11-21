@@ -1,0 +1,21 @@
+{% for imagegroup in imagegroups %}
+<div class="row-fluid gallery-row" style="padding: 0 0 12px 0;">
+
+	{% for galleryitem in imagegroup %}
+
+		{% if galleryitem %}
+		<div class="span4">
+			<a class="{{ uuid }} gallery-image" rel="{{ uuid }}" href="{{ galleryitem.full.url }}">
+				<img width="200" src="{{ galleryitem.medium.url }}">
+			</a>
+		</div>
+		{% endif %}
+
+	{% endfor %}
+
+</div>
+{% endfor %}
+
+<script type="text/javascript">
+	$(".{{ uuid }}").fancybox();
+</script>
