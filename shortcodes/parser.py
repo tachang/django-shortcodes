@@ -39,8 +39,13 @@ def parse(value):
                 function = getattr(module, 'parse')
                 result = function(args)
                 #cache.set(item, result, 3600)
+
+                if result is None:
+                  result = ''
                 parsed = re.sub(r'\[' + item + r'\]', result, parsed)
         except ImportError:
+            pass
+        except ValueError:
             pass
 
     return parsed
