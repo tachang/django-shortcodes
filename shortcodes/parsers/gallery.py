@@ -6,6 +6,9 @@ from django.conf import settings
 from itertools import izip_longest
 
 def parse(kwargs, template_name='shortcodes/gallery.html'):
+    if 'ids' not in kwargs:
+      return ""
+
     ids = kwargs.get('ids').split(',')
 
     images  = []
