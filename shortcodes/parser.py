@@ -2,6 +2,7 @@ import re
 import shortcodes.parsers
 from django.core.cache import cache
 
+supported_shortcodes = ["caption","gallery","vimeo"]
 
 def import_parser(name):
     mod = __import__(name)
@@ -12,6 +13,35 @@ def import_parser(name):
 
 
 def parse(value):
+
+    for code in supported_shortcodes:
+
+        module = import_parser('shortcodes.parsers.' + code)
+        function = getattr(module, 'parse')
+
+
+        # With arguments in opening tag
+        ex = re.compile(r"\[%s .*?\].*?\[/%s\]" % (code,code))
+        match_groups = re.finditer(ex, value)
+
+        for group in match_groups:
+          value = value[:group.start()] + function(value) + value[group.end():]
+
+        # Without arguments in tag
+        ex = re.compile(r"\[%s\].*?\[/%s\]" % (code,code))
+        match_groups = re.finditer(ex, value)
+
+        for group in match_groups:
+          value = value[:group.start()] + function(value) + value[group.end():]
+
+        ex = re.compile(r"\[%s (.*?)\]" % code)
+        match_groups = re.finditer(ex, value)
+
+        for group in match_groups:
+          value =  value[:group.start()] + function(value) + value[group.end():]
+        
+
+    """
     ex = re.compile(r'\[(.*?)\]')
     groups = ex.findall(value)
     pieces = {}
@@ -39,9 +69,7 @@ def parse(value):
                 if name == '':
                     continue
 
-                module = import_parser('shortcodes.parsers.' + name)
-                function = getattr(module, 'parse')
-                result = function(args)
+
                 #cache.set(item, result, 3600)
 
                 if result is None:
@@ -53,7 +81,7 @@ def parse(value):
             pass
 
     return parsed
-
+    """
 
 def __parse_args__(value):
     ex = re.compile(r'[ ]*(\w+)=([^" ]+|"[^"]*")[ ]*(?: |$)')
