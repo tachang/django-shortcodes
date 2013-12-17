@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 
-def parse(kwargs, template_name="shortcodes/vimeo.html"):
+def parse(kwargs, text, template_name="shortcodes/vimeo.html"):
     video_id = kwargs.get('id')
     if video_id:
         width = int(kwargs.get(

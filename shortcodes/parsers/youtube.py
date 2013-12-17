@@ -2,7 +2,7 @@ from django.template import Template, Context
 from django.conf import settings
 
 
-def parse(kwargs):
+def parse(kwargs, text):
     id = kwargs.get('v')
     width = int(kwargs.get(
         'w',

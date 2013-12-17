@@ -55,7 +55,6 @@ def parse(value):
             })
 
     for replacement in replacements:
-        print replacement
         original_html = original_html.replace(replacement['old'], replacement['new'], 1)
 
     return original_html
