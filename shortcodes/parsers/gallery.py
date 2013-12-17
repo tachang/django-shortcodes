@@ -5,7 +5,9 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from itertools import izip_longest
 
-def parse(kwargs, template_name='shortcodes/gallery.html'):
+
+def parse(kwargs, text, template_name='shortcodes/gallery.html', **additional_kwargs):
+
     if 'ids' not in kwargs:
       return ""
 

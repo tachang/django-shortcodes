@@ -11,77 +11,55 @@ def import_parser(name):
         mod = getattr(mod, comp)
     return mod
 
+def shortcode_to_html(code, shortcode_text):
+    module = import_parser('shortcodes.parsers.' + code)
+    method = getattr(module, 'parse')
+
+    regex_string = r"\[%s(.*?)\]" % code
+
+    shortcode_first_tag = re.findall(regex_string, shortcode_text )[0]
+
+    shortcode_name, space, shortcode_args = shortcode_first_tag.partition(' ')
+    shortcode_args = __parse_args__(shortcode_args)
+
+    html = method(shortcode_args, shortcode_text)
+
+    return html
 
 def parse(value):
+    original_html = value
+
+    replacements = []
 
     for code in supported_shortcodes:
 
-        module = import_parser('shortcodes.parsers.' + code)
-        function = getattr(module, 'parse')
-
-
-        # With arguments in opening tag
-        ex = re.compile(r"\[%s .*?\].*?\[/%s\]" % (code,code))
-        match_groups = re.finditer(ex, value)
-
-        for group in match_groups:
-          value = value[:group.start()] + function(value) + value[group.end():]
-
-        # Without arguments in tag
-        ex = re.compile(r"\[%s\].*?\[/%s\]" % (code,code))
-        match_groups = re.finditer(ex, value)
-
-        for group in match_groups:
-          value = value[:group.start()] + function(value) + value[group.end():]
-
-        ex = re.compile(r"\[%s (.*?)\]" % code)
-        match_groups = re.finditer(ex, value)
-
-        for group in match_groups:
-          value =  value[:group.start()] + function(value) + value[group.end():]
-        
-
-    """
-    ex = re.compile(r'\[(.*?)\]')
-    groups = ex.findall(value)
-    pieces = {}
-    parsed = value
-
-    for item in groups:
-        if ' ' in item:
-            name, space, args = item.partition(' ')
-            args = __parse_args__(args)
-        # If shortcode does not use spaces as a separator, it might use equals
-        # signs.
-        elif '=' in item:
-            name, space, args = item.partition('=')
-            args = __parse_args__(args)
+        # Caption shortcodes have a beginning and ending tag
+        if code in ['caption']:
+            regex_search_string = r"\[%s .*?\].*?\[/%s\]" % (code,code)
+        # Gallery and Vimeo shortcodes are just opening tags with arguments.
+        elif code in ['gallery','vimeo']:
+            regex_search_string = r"\[%s (.*?)\]" % code
         else:
-            name = item
-            args = {}
+            continue
 
-        item = re.escape(item)
-        try:
-            #if cache.get(item):
-            #    parsed = re.sub(r'\[' + item + r'\]', cache.get(item), parsed)
-            #else:
-                # Case when you have a shortcode like []
-                if name == '':
-                    continue
+        ex = re.compile(regex_search_string)
+        match_groups = re.finditer(ex, original_html)
 
+        for group in match_groups:
+            shortcode_text = original_html[group.start():group.end()]
+            converted_shortcode_html = shortcode_to_html(code, shortcode_text)
 
-                #cache.set(item, result, 3600)
+            replacements.append({
+                'old' : shortcode_text,
+                'new' : converted_shortcode_html
+            })
 
-                if result is None:
-                  result = ''
-                parsed = re.sub(r'\[' + item + r'\]', result, parsed)
-        except ImportError:
-            pass
-        except ValueError:
-            pass
+    for replacement in replacements:
+        print replacement
+        original_html = original_html.replace(replacement['old'], replacement['new'], 1)
 
-    return parsed
-    """
+    return original_html
+
 
 def __parse_args__(value):
     ex = re.compile(r'[ ]*(\w+)=([^" ]+|"[^"]*")[ ]*(?: |$)')
