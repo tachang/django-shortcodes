@@ -1,10 +1,18 @@
+import re
 from django.template import Template, Context
 from django.template.loader import render_to_string
 from django.conf import settings
 
 
 def parse(kwargs, text, template_name="shortcodes/vimeo.html"):
-    video_id = kwargs.get('id')
+
+    if kwargs.get('id'):
+      video_id = kwargs.get('id')
+    elif re.findall("\[vimeo ([0-9]+)\]", text):
+      video_id = re.findall("\[vimeo ([0-9]+)\]", text)[0]
+    else:
+      return ""
+
     if video_id:
         width = int(kwargs.get(
             'width',
