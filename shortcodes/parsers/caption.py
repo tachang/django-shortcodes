@@ -12,8 +12,16 @@ from itertools import izip_longest
 def parse(kwargs, text, template_name='shortcodes/caption.html', **additional_kwargs):
 	soup = BeautifulSoup(text)
 
-	image_anchor_html = str(soup.a)
-	image_width = soup.a.img['width']
+	# Caption has an anchor
+	if soup.a:
+		image_anchor_html = str(soup.a)
+		image_width = soup.a.img['width']
+	# Caption just surrounds an image. Image is not clickable.
+	elif soup.img:
+		image_anchor_html = str(soup.img)
+		image_width = soup.img['width']
+	else:
+		return ""
 
 	# To get the caption text I need to remove the shortcode and just get the main text.
 	# This is just plain ugly and results in '] caption text['
